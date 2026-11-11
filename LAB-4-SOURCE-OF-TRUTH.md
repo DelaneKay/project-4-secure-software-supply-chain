@@ -13,10 +13,10 @@ Build OWASP Juice Shop from pinned source through GitHub Actions, produce and ve
 3. **GitHub Actions:** On pull requests run Gitleaks, dependency checks, tests, and an image build and scan. On merges to the protected branch build the release image, generate an SBOM, scan it, and push to ECR. Pin third-party actions to full commit SHAs, use minimal workflow permissions, and a separate deployment environment for release steps.
 4. **SBOM:** Generate a CycloneDX or SPDX inventory with Syft. Save it as a workflow artifact and scan it with Grype. Review dependencies and findings; document accepted exceptions with reasons and review dates.
 5. **Scan gates:** Use Trivy for image findings and Gitleaks for secrets. Start by failing on high or critical findings with a fix available. Review findings and exceptions. Retain SBOM and scan results with the build record. A successful scan does not prove an image is safe.
-6. **Attest:** Generate GitHub provenance and SBOM attestations for the image digest. Cosign keyless signing is an optional extension.
-7. **Verify:** Verify the attestation, expected repository and workflow identity before deployment. Deploy the verified image digest rather than a mutable tag.
+6. **Sign and attest:** Use Cosign keyless signing for the ECR image digest with the GitHub Actions OIDC identity and Sigstore's public Fulcio and Rekor services. Generate GitHub provenance and SBOM attestations for that same digest. Record the signature and attestation evidence.
+7. **Verify:** Before deployment, require Cosign signature verification against the expected signing identity and OIDC issuer, and verify GitHub provenance and SBOM attestations for the same image digest against the expected repository and workflow identity. If either required verification fails, block deployment. Pass only the verified digest to Terraform, rather than a mutable tag. Restrict AWS deployment permissions to approved paths so the workflow gate cannot be casually bypassed.
 8. **Deploy:** Create an ECS Fargate cluster, task definition and service referencing the ECR image digest. Use an execution role for image pulls and logs. Restrict access to this intentionally vulnerable application.
-9. **Demonstrate:** Show a successful build and deployment, and demonstrate rejection of a changed digest or an image without the expected attestation. Trace the deployed digest through the SBOM, scan results, source commit, and workflow run.
+9. **Demonstrate:** Show a successful build and deployment, and demonstrate rejection of a changed digest or an image without the expected attestation. Demonstrate rejection of an unsigned image or unexpected signer as well. Trace the deployed digest through its Cosign signature, SBOM, scan results, attestations, source commit, and workflow run.
 
 ## Scope and cost
 
@@ -32,4 +32,5 @@ Repository with workflows, SBOM and scan evidence, provenance verification instr
 - https://docs.github.com/en/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws
 - https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations
 - https://docs.sigstore.dev/cosign/system_config/registry_support/
+- https://docs.sigstore.dev/cosign/signing/overview/
 - https://docs.aws.amazon.com/AmazonECR/latest/userguide/ECR_on_ECS.html
