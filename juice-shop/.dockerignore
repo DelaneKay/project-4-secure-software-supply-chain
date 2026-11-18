@@ -31,3 +31,6 @@ scripts/
 terraform/
 test/
 vagrant/
+
+# Cypress configuration is for tests, not the application image build.
+/cypress.config.ts
