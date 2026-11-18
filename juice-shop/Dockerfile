@@ -1,8 +1,7 @@
-FROM node:24 AS installer
+FROM node:24@sha256:9d266751ca3d7fdbe651c878ffd5ad0a42fed49a18c283509267c97f025b7496 AS installer
 COPY . /juice-shop
 WORKDIR /juice-shop
-RUN npm install -g typescript@^6.0.3
-RUN npm ci --omit=dev
+RUN npm ci --include=dev
 RUN rm -rf frontend/node_modules
 RUN rm -rf frontend/.angular
 RUN rm -rf frontend/src/assets
@@ -13,12 +12,12 @@ RUN chmod -R g=u ftp/ frontend/dist/ logs/ data/ i18n/
 RUN rm ftp/legal.md || true
 RUN rm i18n/*.json || true
 
-# keep version in sync with package.json
-ARG CYCLONEDX_NPM_VERSION='^2.0.0||^3.0.0||^4.0.0'
-RUN npm install -g @cyclonedx/cyclonedx-npm@$CYCLONEDX_NPM_VERSION
+# Generate the application SBOM using the locked build tool.
 RUN npm run sbom
+# Remove build-only packages before copying to the runtime image.
+RUN npm prune --omit=dev --ignore-scripts
 
-FROM gcr.io/distroless/nodejs24-debian13
+FROM gcr.io/distroless/nodejs24-debian13@sha256:24bc0fe0225c7518f202a822587dad74fe143b96326b81fe5cc08c1df8bed03e
 ARG BUILD_DATE
 ARG VCS_REF
 LABEL maintainer="Bjoern Kimminich <bjoern.kimminich@owasp.org>" \
