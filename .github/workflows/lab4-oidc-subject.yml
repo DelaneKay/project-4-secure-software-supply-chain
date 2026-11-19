@@ -8,6 +8,7 @@ permissions: {}
 jobs:
   inspect-subject:
     runs-on: ubuntu-latest
+    environment: lab4-apply
 
     permissions:
       id-token: write
