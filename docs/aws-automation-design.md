@@ -10,3 +10,11 @@
 - Keep AWS long-lived credentials out of GitHub.
 - Define the one-time bootstrap in Terraform and review its plan before applying.
 - Determine the repository's actual GitHub OIDC subject before finalizing trust.
+
+## Verified OIDC subject
+
+The diagnostic workflow on `master`, without a GitHub environment, reported:
+
+`repo:DelaneKay@59389630/project-4-secure-software-supply-chain@1453914726:ref:refs/heads/master`
+
+Pull request and GitHub environment contexts produce different subjects. Verify each intended context before using it in an IAM trust policy. Never print or store the OIDC token.
