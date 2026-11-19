@@ -1,0 +1,35 @@
+name: Lab 4 AWS identity check
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  verify-identity:
+    runs-on: ubuntu-latest
+    environment: lab4-apply
+
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Assume Lab 4 role using OIDC
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
+        with:
+          role-to-assume: ${{ vars.LAB4_APPLY_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Confirm assumed role
+        shell: bash
+        run: |
+          arn="$(aws sts get-caller-identity --query Arn --output text)"
+          case "$arn" in
+            */project-4-terraform-apply-role/*)
+              echo "Successfully assumed the Lab 4 Terraform apply role."
+              ;;
+            *)
+              echo "Unexpected AWS identity."
+              exit 1
+              ;;
+          esac
