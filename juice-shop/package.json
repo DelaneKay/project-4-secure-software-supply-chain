@@ -214,5 +214,10 @@
     "esbuild@0.28.1": true,
     "@scarf/scarf": false,
     "cypress@16.2.0": true
+  },
+  "overrides": {
+    "get-uri": {
+      "basic-ftp": "6.2.1"
+    }
   }
 }
